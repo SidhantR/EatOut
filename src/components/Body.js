@@ -1,44 +1,83 @@
 import { useEffect, useState } from "react";
-import { restaurantList } from "../constant";
+import { restaurantList, swiggy_api_URL } from "../../constant";
 import RestaurantCard from "./RestaurantCard";
 
-function filterRestaurant (searchText, restaurants){
+function filterData(searchText, restaurants) {
   return restaurants?.filter((restaurant) => {
-    restaurant.data.name.includes(searchText)
-  })
+    return restaurant.info.name.includes(searchText);
+  });
 }
 
 const Body = () => {
-  const [restaurants, setRestaurants] = useState(restaurantList)
-  const [searchInput, setSearchInput] = useState('')
+  const [allRestaurants, setAllRestaurants] = useState(restaurantList);
+  const [searchInput, setSearchInput] = useState("");
+  const [filteredRestaurant, setFilteredRestaurant] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // useEffect(() => {
-  //   getRestaurants()
-  // }, [])
+  useEffect(() => {
+    getRestaurants();
+  }, []);
 
-  // const getRestaurants = async() => {
-  //   fetch()
-  // }
+  async function getRestaurants() {
+    try {
+      const response = await fetch(swiggy_api_URL);
+      const json = await response.json();
+
+      async function checkDataJson(jsonData) {
+        for (let i = 0; i < jsonData?.data?.cards.length; i++) {
+          let checkData =
+            json?.data?.cards[i]?.card?.card?.gridElements?.infoWithStyle
+              ?.restaurants;
+          if (checkData !== undefined) {
+            return checkData;
+          }
+        }
+      }
+      const data = await checkDataJson(json);
+      setAllRestaurants(data);
+      setFilteredRestaurant(data);
+    } catch (error) {
+      console.log(error, "error");
+    }
+  }
+
+  const searchData = async (searchInput, restaurants) => {
+    if (searchInput !== "") {
+      const filteredData = await filterData(searchInput, restaurants);
+      console.log(filteredData, 'filteredData')
+      setFilteredRestaurant(filteredData);
+      setErrorMessage("");
+      if (filteredData?.length === 0) {
+        setErrorMessage("No Restaurant Found");
+      }
+    } else {
+      setErrorMessage("");
+      setFilteredRestaurant(restaurants);
+    }
+  };
 
   return (
     <>
       <div className="search-container">
-        <input 
-          type="text" 
-          className="serach-input" 
+        <input
+          type="text"
+          className="serach-input"
           placeholder="search"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
         />
-        <button className="search-btn" onClick={() => {
-          const restaurants = filterRestaurant
-
-        }}>Search</button>
+        <button
+          className="search-btn"
+          onClick={() => searchData(searchInput, allRestaurants)}
+        >
+          Search
+        </button>
       </div>
       <div className="restaurant-list">
-        {restaurants?.map((restaurant) => {
+        {filteredRestaurant?.map((restaurant) => {
+          console.log(restaurant, 'restaurant')
           return (
-            <RestaurantCard key={restaurant.data.id} {...restaurant.data} />
+            <RestaurantCard key={restaurant?.info?.id} {...restaurant.info} />
           );
         })}
       </div>

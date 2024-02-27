@@ -1,4 +1,4 @@
-import {IMG_CDN_URL} from '../constant'
+import {IMG_CDN_URL} from '../../constant'
 
 const RestaurantCard = ({
     cloudinaryImageId,
@@ -9,6 +9,13 @@ const RestaurantCard = ({
     costForTwoString,
     avgRating,
   }) => {
+    console.log(cloudinaryImageId,
+      name,
+      cuisines,
+      area,
+      lastMileTravelString,
+      costForTwoString,
+      avgRating,)
     return (
       <div className="card">
         <img
@@ -18,7 +25,7 @@ const RestaurantCard = ({
           }
         />
         <h2>{name}</h2>
-        <h3>{cuisines.join(", ")}</h3>
+        <h3>{cuisines?.join(", ")}</h3>
         <h4>{area} stars</h4>
       </div>
     );
